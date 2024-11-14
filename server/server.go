@@ -13,11 +13,12 @@ func main() {
 	allowedOriginsPtr := flag.String("allowed-origins", "*", "a comma separated list of allowed origins.")
 	bannedOutputsPtr := flag.String("banned-outputs", "", "a comma separated list of banned outputs.")
 	bannedDestsPtr := flag.String("banned-dests", "", "a comma separated list of banned proxy destinations.")
+	verifySslCert := flag.Bool("verify-sslcert", true, "turn ssl certificate verification on or off.")
 
 	flag.Parse()
 
 	finished := make(chan bool)
-	libproxy.Initialize(*tokenPtr, *hostPtr, *allowedOriginsPtr, *bannedOutputsPtr, *bannedDestsPtr, onProxyStateChangeServer, false, finished)
+	libproxy.Initialize(*tokenPtr, *hostPtr, *allowedOriginsPtr, *bannedOutputsPtr, *bannedDestsPtr, *verifySslCert, onProxyStateChangeServer, false, finished)
 
 	<-finished
 }

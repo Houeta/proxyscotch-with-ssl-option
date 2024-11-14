@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"crypto/tls"
 	"net/url"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ var (
 	allowedOrigins     []string
 	bannedOutputs      []string
 	bannedDests        []string
+	verifySslCert		bool
 )
 
 type Request struct {
@@ -79,6 +81,7 @@ func Initialize(
 	initialAllowedOrigins string,
 	initialBannedOutputs string,
 	initialBannedDests string,
+	initialVerifySslSert bool,
 	onStatusChange statusChangeFunction,
 	withSSL bool,
 	finished chan bool,
@@ -91,6 +94,7 @@ func Initialize(
 	} else {
 		bannedDests = []string{}
 	}
+	verifySslCert = initialVerifySslSert
 	allowedOrigins = strings.Split(initialAllowedOrigins, ",")
 	accessToken = initialAccessToken
 	sessionFingerprint = uuid.New().String()
@@ -313,7 +317,10 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		_ = proxyRequest.Body.Close()
 	}
 
-	var client http.Client
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !verifySslCert},
+	}
+	client := &http.Client{ Transport: tr }
 	var proxyResponse *http.Response
 	proxyResponse, err := client.Do(&proxyRequest)
 
